@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:13
+    container_name: inflatable_postgres
+    environment:
+      POSTGRES_DB: inflatable_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: trust  # Adicione esta linha para desenvolvimento
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - inflatable_network
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: inflatable_app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/inflatable_db
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      JWT_SECRET: mySecretKeyForInflatableFreelancerProject2024
+      JWT_EXPIRATION: 86400000
+    depends_on:
+      - postgres
+    networks:
+      - inflatable_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  inflatable_network:
+    driver: bridge
